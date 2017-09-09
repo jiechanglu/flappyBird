@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        canvas {
+            border: 1px dashed red;
+            margin: 50px 280px;
+        }
+    </style>
+</head>
+<body>
+<canvas width="800" height="500"></canvas>
+<script>
+    //1.获取元素
+    var c = document.querySelector('canvas');
+    //2.获取上下文 2d/3d
+    var ctx = c.getContext('2d');
+    //3.设置起点 画图
+
+//    重力加速度：S = Vt * 1/2 * g * t^2;
+//    Vt = V0 + g * t;
+    var img = new Image();
+    img.src = '../images/birds.png';
+    var col = 0;
+    img.onload = function(){
+        var imgW = img.width/3;
+        var imgH = img.height;
+        var canvasX = 0;
+        var canvasY = 0;
+        var speedY = 3;
+        function fly(){
+            var imgY = 0;
+            var imgX = col*imgW;
+            ctx.clearRect(0,0,c.width,c.height);
+            ctx.drawImage(img,imgX,imgY,imgW,imgH,canvasX,canvasY+=speedY,imgW,imgH);
+            col++;
+            if(col > 2){
+                col = 0;
+            }
+            if(canvasY >= c.height-imgH){
+                canvasY = 0;
+            }
+            window.requestAnimationFrame(fly);
+        }
+        fly();
+    };
+
+
+</script>
+</body>
+</html>

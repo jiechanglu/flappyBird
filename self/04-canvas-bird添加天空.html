@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body{
+            overflow: hidden;
+        }
+        canvas {
+            border: 1px dashed red;
+            margin: 10px 280px;
+        }
+    </style>
+</head>
+<body>
+<canvas width="800" height="600"></canvas>
+<script>
+    //1.获取元素
+    var c = document.querySelector('canvas');
+    //2.获取上下文 2d/3d
+    var ctx = c.getContext('2d');
+    //3.设置起点 画图
+
+//    重力加速度：S = Vt * 1/2 * g * t^2;
+//    Vt = V0 + g * t;
+
+    //切记下面要先加载天空先的话就先创建skyImg对象
+    var imgSky = new Image();
+    imgSky.src = '../images/sky.png';
+
+    var img = new Image();
+    img.src = '../images/birds.png';
+
+    var col = 0;
+    var v0 = 0;
+    imgSky.onload = function(){
+        img.onload = function(){
+            var imgW = img.width/3;
+            var imgH = img.height;
+            var canvasX = 100;
+            var canvasY = 0;
+
+            var maxDistance = c.height - imgH;
+            var st = new Date();
+            var et = new Date();
+            var offset = 0;
+
+            var imgSkyX = 0;
+            var speedSky = 2;
+            var imgSkyX1 = imgSky.width;
+            function fly(){
+                var imgY = 0;
+                var imgX = col*imgW;
+
+                st = new Date();
+                offset = st - et;
+                et = st;
+
+                var g = 0.0003;
+                var maxSpeed = 0.5;
+                var maxAngle = 45;
+                var currentY = v0 * offset + 1/2 * g * offset * offset;
+                v0 = v0 + g * offset;
+
+
+                canvasY += currentY;
+                if(canvasY >= maxDistance){
+                    return;
+                }
+
+                ctx.clearRect(0,0,c.width,c.height);
+                var currentAngle = v0/maxSpeed * maxAngle;
+                if(currentAngle >= maxAngle){
+                    currentAngle = maxAngle;
+                }
+
+                imgSkyX -= speedSky;
+                imgSkyX1 -= speedSky;
+                if(imgSkyX <= -imgSky.width){
+                    imgSkyX = imgSky.width;
+                }
+                if(imgSkyX1 <= -imgSky.width){
+                    imgSkyX1 = imgSky.width;
+                }
+
+                ctx.drawImage(imgSky,imgSkyX,0);
+                ctx.drawImage(imgSky,imgSkyX1,0);
+
+                ctx.save();
+                //图片下降其实只是把画布降落到最底部；
+                ctx.translate(canvasX+imgW/2,canvasY+imgH/2);
+                ctx.rotate(Math.PI/180 * currentAngle);
+                ctx.drawImage(img,imgX,imgY,imgW,imgH,-imgW/2,-imgW/2,imgW,imgH);
+                ctx.restore();
+
+                col++;
+                if(col > 2){
+                    col = 0;
+                }
+                if(canvasY >= c.height-imgH){
+                    canvasY = 0;
+                }
+                window.requestAnimationFrame(fly);
+            }
+            fly();
+
+            c.onclick = function(){
+                console.log("1233");
+                v0 = -0.3;
+            };
+        };
+    };
+
+
+</script>
+</body>
+</html>

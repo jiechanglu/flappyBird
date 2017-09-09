@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html>
+
+<head lang="en">
+    <meta charset="UTF-8">
+    <title></title>
+    <style>
+        body {
+            overflow: hidden;
+        }
+        
+        canvas {
+            border: 1px dashed red;
+            margin: 10px 280px;
+        }
+    </style>
+</head>
+
+<body>
+    <canvas width="800" height="600"></canvas>
+    <script>
+        //1.获取元素
+        var c = document.querySelector('canvas');
+        //2.获取上下文 2d/3d
+        var ctx = c.getContext('2d');
+        //3.设置起点 画图
+
+        //    重力加速度：S = Vt * 1/2 * g * t^2;
+        //    Vt = V0 + g * t;
+
+        //切记下面要先加载天空先的话就先创建skyImg对象
+        var imgSky = new Image();
+        imgSky.src = '../images/sky.png';
+
+        var imgLand = new Image();
+        imgLand.src = '../images/land.png';
+
+        //底部管道
+        var imgPipeB = new Image();
+        imgPipeB.src = '../images/pipe1.png';
+
+        //顶部管道
+        var imgPipeT = new Image();
+        imgPipeT.src = '../images/pipe2.png';
+
+        var img = new Image();
+        img.src = '../images/birds.png';
+
+
+        var col = 0;
+        var v0 = 0;
+        imgSky.onload = function() {
+            imgLand.onload = function() {
+                //            console.log("123");
+                imgPipeB.onload = function() {
+                    imgPipeT.onload = function() {
+                        img.onload = function() {
+                            var imgW = img.width / 3;
+                            var imgH = img.height;
+                            var canvasX = 100;
+                            var canvasY = 0;
+
+                            var maxDistance = c.height - imgH;
+                            var st = new Date();
+                            var et = new Date();
+                            var offset = 0;
+
+                            var imgSkyX = 0;
+                            var speedSky = 2;
+                            var speedLand = 2;
+                            var speedPipe = 2;
+                            var imgSkyX1 = imgSky.width;
+
+                            var imgLandY = c.height - imgLand.height;
+                            var imgLandW = imgLand.width;
+                            var imgLandH = imgLand.height;
+                            var imgLandX1 = 0;
+                            var imgLandX2 = imgLandW;
+                            var imgLandX3 = imgLandW * 2;
+                            var imgLandX4 = imgLandW * 3;
+
+
+                            var imgPipeW = imgPipeT.width;
+                            var imgPipeH = imgPipeT.height;
+
+                            function getY() {
+                                return -(Math.random() * 240 + 130);
+                            }
+                            //                        for(var i = 0; i < 7; i++){
+                            ////                            var canvasPY = -(Math.random()*240+130);
+                            //                                //顶部管的Y坐标取值范围为(-130~-370);
+                            //                                //ctx.drawImage(img,imgX,imgY,imgW,imgH,canvasX,canvasY,canvasW,canvasH);
+                            //                            var canvasPX = (300+(imgPipeW*3*i));
+                            //                        }
+                            var canvasPY = {
+                                0: getY(),
+                                1: getY(),
+                                2: getY(),
+                                3: getY(),
+                                4: getY(),
+                                5: getY(),
+                                6: getY()
+                            };
+                            var canvasPX = {
+                                0: (300),
+                                1: (300 + (imgPipeW * 3)),
+                                2: (300 + (imgPipeW * 3 * 2)),
+                                3: (300 + (imgPipeW * 3 * 3)),
+                                4: (300 + (imgPipeW * 3 * 4)),
+                                5: (300 + (imgPipeW * 3 * 5)),
+                                6: (300 + (imgPipeW * 3 * 6))
+                            };
+
+                            var score = 0;
+                            var str = 'Scores : ';
+                            var scoreX = 0;
+
+                            function fly() {
+                                var imgY = 0;
+                                var imgX = col * imgW;
+
+                                st = new Date();
+                                offset = st - et;
+                                et = st;
+
+                                var g = 0.0003;
+                                var maxSpeed = 0.5;
+                                var maxAngle = 45;
+                                var currentY = v0 * offset + 1 / 2 * g * offset * offset;
+                                v0 = v0 + g * offset;
+
+
+                                canvasY += currentY;
+                                if (canvasY >= maxDistance - imgLandH + imgH / 2 - 2) {
+                                    return;
+                                }
+
+                                ctx.clearRect(0, 0, c.width, c.height);
+                                ctx.beginPath();
+                                var currentAngle = v0 / maxSpeed * maxAngle;
+                                if (currentAngle >= maxAngle) {
+                                    currentAngle = maxAngle;
+                                }
+
+                                imgSkyX -= speedSky;
+                                imgSkyX1 -= speedSky;
+                                if (imgSkyX <= -imgSky.width) {
+                                    imgSkyX = imgSky.width;
+                                }
+                                if (imgSkyX1 <= -imgSky.width) {
+                                    imgSkyX1 = imgSky.width;
+                                }
+
+                                //绘制天空
+                                ctx.drawImage(imgSky, imgSkyX, 0);
+                                ctx.drawImage(imgSky, imgSkyX1, 0);
+
+
+                                imgLandX1 -= speedLand;
+                                imgLandX2 -= speedLand;
+                                imgLandX3 -= speedLand;
+                                imgLandX4 -= speedLand;
+
+                                if (imgLandX1 < -imgLandW) {
+                                    imgLandX1 += 4 * imgLandW;
+                                }
+                                if (imgLandX2 < -imgLandW) {
+                                    imgLandX2 += 4 * imgLandW;
+                                }
+                                if (imgLandX3 < -imgLandW) {
+                                    imgLandX3 += 4 * imgLandW;
+                                }
+                                if (imgLandX4 < -imgLandW) {
+                                    imgLandX4 += 4 * imgLandW;
+                                }
+
+                                //绘制管道
+                                //需求：
+                                //    1、从canvasX == 300起绘制第一条管道
+                                //    2、每条管道之间间隙两条管道的宽度
+                                //    3、顶部及底部管道随机生成，管道间的空隙为150px高
+                                //    4、绘制管道路径，判断小鸟是否破到管道
+                                for (var i = 0; i < 7; i++) {
+
+                                    //顶部管的Y坐标取值范围为(-130~-370);
+                                    //ctx.drawImage(img,imgX,imgY,imgW,imgH,canvasX,canvasY,canvasW,canvasH);
+                                    canvasPX[i] -= speedPipe;
+                                    if (canvasPX[i] <= -imgPipeW * 3) {
+                                        canvasPX[i] = imgPipeW * 3 * 6;
+                                        canvasPY[i] = getY();
+                                    }
+                                    ctx.drawImage(imgPipeT, 0, 0, imgPipeW, imgPipeH, canvasPX[i], canvasPY[i], imgPipeW, imgPipeH);
+                                    ctx.drawImage(imgPipeB, 0, 0, imgPipeW, imgPipeH, canvasPX[i], canvasPY[i] + 150 + imgPipeH, imgPipeW, imgPipeH);
+                                    ctx.rect(canvasPX[i], canvasPY[i], imgPipeW, imgPipeH);
+                                    ctx.rect(canvasPX[i], canvasPY[i] + 150 + imgPipeH, imgPipeW, imgPipeH);
+                                }
+
+                                //绘制陆地
+                                ctx.drawImage(imgLand, imgLandX1, imgLandY);
+                                ctx.drawImage(imgLand, imgLandX2, imgLandY);
+                                ctx.drawImage(imgLand, imgLandX3, imgLandY);
+                                ctx.drawImage(imgLand, imgLandX4, imgLandY);
+
+                                //                            统计分数：
+                                scoreX++;
+                                //                            console.log((scoreX-252));
+                                if ((scoreX % 78) == 0) {
+                                    score++;
+                                }
+
+                                ctx.font = '24px 微软雅黑';
+                                ctx.fillStyle = 'red';
+                                ctx.fillText(str + score, c.width - 140, 35);
+                                ctx.save();
+                                //图片下降其实只是把画布降落到最底部；
+                                ctx.translate(canvasX + imgW / 2, canvasY + imgH / 2);
+                                ctx.rotate(Math.PI / 180 * currentAngle);
+                                ctx.drawImage(img, imgX, imgY, imgW, imgH, -imgW / 2, -imgW / 2, imgW, imgH);
+                                ctx.restore();
+
+
+                                col++;
+                                if (col > 2) {
+                                    col = 0;
+                                }
+                                if (canvasY >= c.height - imgH) {
+                                    canvasY = 0;
+                                }
+                                if (ctx.isPointInPath(canvasX + imgW / 2, canvasY + imgH / 2)) {
+                                    return;
+                                }
+                                window.requestAnimationFrame(fly);
+                            }
+                            fly();
+
+                            c.onclick = function() {
+                                //                    console.log("1233");
+                                v0 = -0.21;
+                            };
+                        };
+                    }
+                };
+
+            };
+        };
+    </script>
+</body>
+
+</html>

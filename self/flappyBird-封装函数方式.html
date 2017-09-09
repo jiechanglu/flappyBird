@@ -1,0 +1,150 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Title</title>
+    <style>
+        canvas {
+            border: 1px solid #ccc;
+        }
+    </style>
+</head>
+<body>
+<canvas width="800" height="600"></canvas>
+<script src="../js2/sky.js"></script>
+<script src="../js2/bird.js"></script>
+<script src="../js2/land.js"></script>
+<script src="../js2/pipe.js"></script>
+<script>
+    /*加载多张图片*/
+    function loadImg (arr,callback){
+        var count = 0;
+        var imgs = {};
+        for (var i = 0; i < arr.length; i++) {
+            var img  = new Image();
+            img.src = "../images/" + arr[i] + ".png";
+            /*将创建好的图上添加到数组*/
+            imgs[arr[i]] = img;
+            img.onload = function(){
+                count ++;
+                console.log(count);
+                if(count == arr.length){
+                    /*当加载完毕之后的操作--回调*/
+                    callback(imgs);
+                }
+            }
+        }
+    }
+
+    /*1.获取canvas标签*/
+    var c = document.querySelector("canvas");
+    /*2.获取上下文*/
+    var ctx = c.getContext("2d");
+
+    loadImg(["birds","sky","land","pipe1","pipe2"],function(imgList){
+        var birdImg = imgList['birds'];
+        var skyImg = imgList["sky"];
+        var landImg = imgList["land"];
+        var pipeImgTop = imgList["pipe2"];
+        var pipeImgBottom = imgList["pipe1"];
+
+        /*起始时间和本次结束时间*/
+        var startTime = new Date(),endTime = 0;
+
+        /*------------下面是天空相关属性--------------*/
+        var sky1 = new Sky({
+            ctx:ctx,
+            skyImg:skyImg,
+            x:0
+        });
+        var sky2 = new Sky({
+            ctx:ctx,
+            skyImg:skyImg,
+            x:skyImg.width
+        });
+        /*-----------下面是创建小鸟-----------*/
+        var bird = new Bird({
+            ctx:ctx,
+            birdImg:birdImg,
+            canvasX:100,
+            canvasY:100
+        });
+        /*下面是创建陆地*/
+        var lands = [];
+        for(var i =0;i<4;i++){
+            var land = new Land({
+                ctx:ctx,
+                landImg:landImg,
+                x:i * landImg.width,
+                y: c.height - landImg.height
+            });
+            lands.push(land);
+        }
+        /*-------下面是创建管道--------*/
+        var pipes = [];
+        for(var i =0;i<6;i++){
+            var pipe = new Pipe({
+                ctx:ctx,
+                pipeImgTop:pipeImgTop,
+                pipeImgBottom:pipeImgBottom,
+                x:300+(3*pipeImgTop.width) * i
+            })
+            pipes.push(pipe);
+        }
+
+        function fly(){
+            endTime = new Date();
+            /*响应的时间间隔*/
+            var offsetTime = endTime - startTime;
+            startTime = endTime;
+
+            /*清除画布内容：*/
+            ctx.clearRect(0,0, c.width, c.height);
+
+            /*清除画布并不会清除之后添加的路径，所以需要开启新路径，以免受到之前路径的影响*/
+            ctx.beginPath();
+
+            /*绘制天空*/
+            sky1.drawSky();
+            sky2.drawSky();
+
+            /*绘制小鸟*/
+            bird.drawBird(offsetTime);
+
+            /*绘制管道*/
+            for (var i = 0; i < pipes.length; i++) {
+                var pipe = pipes[i];
+                pipe.drawPipe();
+            }
+
+            /*绘制陆地*/
+            for (var i = 0; i < lands.length; i++) {
+                var land = lands[i];
+                land.drawLand();
+            }
+
+            /*判断小鸟是否超出上下边界*/
+            console.log(bird.birdY);
+            if(bird.canvasY < 0 || bird.canvasY > c.height - landImg.height - birdImg.height){
+                return;
+            }
+
+            /*判断小鸟是否撞到管道*/
+            if(ctx.isPointInPath(bird.canvasX + birdImg.width / 6,bird.canvasY + birdImg.height / 2)){
+                return;
+            }
+
+            /*最后添加动画  requestAnimationFrame的触发有时间间隔*/
+            window.requestAnimationFrame(fly);
+        }
+
+        fly();
+
+        /*实现小鸟上跳*/
+        c.onclick = function(){
+            bird.birdSpeed = -0.15;
+        }
+    })
+</script>
+</body>
+</html>
